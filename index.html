@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOIDRACE | SYNTHWAVE OVERDRIVE</title>
+
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Import Map for Modern Three.js & Post-Processing -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="overlay">
+    <div class="title">VOIDRACE</div>
+    <div class="subtitle">SYNTHWAVE OVERDRIVE</div>
+    <div class="controls-info">
+      <span>W / UP</span> Accelerate &nbsp;&bull;&nbsp; <span>S / DOWN</span> Brake<br>
+      <span>A / D</span> Steer Left / Right &nbsp;&bull;&nbsp; <span>SPACE</span> Hyper Boost
+    </div>
+    <button class="btn" onclick="startGame()">INITIATE</button>
+  </div>
+
+  <div id="hud">
+    <div class="hud-panel">
+      <div class="hud-label">Score</div>
+      <div class="hud-value" id="score-val">0</div>
+    </div>
+    <div class="hud-panel">
+      <div class="hud-label">Distance</div>
+      <div class="hud-value" id="coins-val">0</div>
+    </div>
+  </div>
+
+  <div id="boost-container">
+    <div id="boost-fill"></div>
+  </div>
+
+  <div id="speed-meter">
+    <div class="speed-num" id="speed-val">000</div>
+    <div class="speed-unit">KM/H</div>
+  </div>
+
+  <!-- Link to external JS -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
