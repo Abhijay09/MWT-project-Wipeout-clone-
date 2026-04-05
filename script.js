@@ -107,16 +107,16 @@ const obstacles = [];
 function makeObstacleMesh(color) {
   const group = new THREE.Group();
   const coreMat = new THREE.MeshBasicMaterial({ color: color });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(2.53, 16, 16), coreMat);
+  const core = new THREE.Mesh(new THREE.SphereGeometry(2.93, 16, 16), coreMat);
   group.add(core);
 
   const glowMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.25, side: THREE.BackSide });
-  const glow = new THREE.Mesh(new THREE.SphereGeometry(4.37, 16, 16), glowMat);
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(5.05, 16, 16), glowMat);
   group.add(glow);
 
   const ringCol = color === 0xffdd00 ? 0xffaa00 : 0xff6600;
   const ringMat = new THREE.MeshBasicMaterial({ color: ringCol, side: THREE.DoubleSide });
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(3.91, 0.29, 8, 32), ringMat);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(4.52, 0.29, 8, 32), ringMat);
   ring.userData.isRing = true;
   group.add(ring);
 
@@ -357,7 +357,7 @@ function update() {
   // Collision Detection
   obstacles.forEach(obs => {
     const tDiff = Math.min(Math.abs(t - obs.t), 1 - Math.abs(t - obs.t));
-    if (tDiff < 0.0015 && Math.abs(lateralOffset - obs.lane) < 3.5 && now - lastHitTime > 1000) {
+    if (tDiff < 0.0015 && Math.abs(lateralOffset - obs.lane) < 8.5 && now - lastHitTime > 1000) {
       speed *= 0.2;
       score = Math.max(0, score - 500);
       lastHitTime = now;
