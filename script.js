@@ -4,10 +4,15 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 /** 
+ * BACKEND CONFIG
+ */
+const API_URL = 'http://localhost:3000'; // Change this to your Render URL after you deploy the server
+
+/** 
  * GAME STATE
  */
 let gameRunning = false;
-let score = 0, boost = 100, t = 0;
+let score = 0, boost = 100, t = 0, lives = 3;
 let speed = 0, lateralOffset = 0, targetLateralOffset = 0, shipRotationZ = 0;
 let lastHitTime = 0;
 
@@ -119,10 +124,9 @@ function makeObstacleMesh(color) {
   return group;
 }
 
-// Generate mines along the spline
 for (let i = 0.05; i < 1; i += 0.03) {
   const lane = Math.random() < 0.5 ? -8 : 8; 
-  const color = lane === -8 ? 0xff1111 : 0xffdd00; // Red for left, Yellow for right
+  const color = lane === -8 ? 0xff1111 : 0xffdd00; 
   const pos = spline.getPointAt(i);
   const tangent = spline.getTangentAt(i);
   const up = new THREE.Vector3(0, 1, 0);
@@ -185,21 +189,116 @@ for(let i=0; i<150; i++) {
   mesh.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 50, -Math.random() * 150 - 20);
   linesGroup.add(mesh);
 }
-// Start invisible until speed > 100
 linesGroup.visible = false;
 camera.add(linesGroup);
 
 /**
- * INPUTS & ACTIONS
+ * BACKEND LOGIC (Fetch and Save)
  */
-const keys = {};
-window.onkeydown = (e) => keys[e.code] = true;
-window.onkeyup = (e) => keys[e.code] = false;
+async function loadLeaderboard() {
+  const listEl = document.getElementById('leaderboard-list');
+  listEl.innerHTML = '<div style="color:#00dcff;">LOADING...</div>';
+
+  try {
+    const response = await fetch(`${API_URL}/leaderboard`);
+    const data = await response.json();
+
+    listEl.innerHTML = '';
+    if (data.length === 0) {
+      listEl.innerHTML = '<div style="color:#ccc;">NO RECORDS FOUND</div>';
+    } else {
+      data.forEach((row, index) => {
+        listEl.innerHTML += `
+          <div class="score-row">
+            <span>${index + 1}. ${row.name.toUpperCase()}</span>
+            <span>${Math.floor(row.score).toLocaleString()}</span>
+          </div>`;
+      });
+    }
+  } catch (err) {
+    listEl.innerHTML = '<div style="color:#ff1111;">SERVER OFFLINE</div>';
+  }
+}
+
+window.submitScore = async function() {
+  const nameInput = document.getElementById('player-name').value.trim() || 'VOID';
+  const finalScore = Math.floor(score);
+
+  const btn = document.querySelector('#menu-gameover .btn');
+  btn.innerText = 'SAVING...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_URL}/leaderboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameInput, score: finalScore })
+    });
+    
+    if (res.ok) {
+        window.showScreen('menu-leaderboard');
+    } else {
+        alert("Server error while saving.");
+    }
+  } catch (err) {
+    alert("Could not connect to server.");
+  } finally {
+    btn.innerText = 'SAVE & EXIT';
+    btn.disabled = false;
+  }
+};
+
+/**
+ * MENU ACTIONS
+ */
+window.showScreen = function(screenId) {
+  document.querySelectorAll('.menu-screen').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.remove('hidden');
+
+  // Load leaderboard data if that screen is opened
+  if (screenId === 'menu-leaderboard') {
+    loadLeaderboard();
+  }
+}
 
 window.startGame = function() {
   const overlay = document.getElementById('overlay');
   if(overlay) overlay.classList.add('hidden');
+  
+  // Reset game state
+  lives = 3;
+  score = 0;
+  boost = 100;
+  t = 0;
+  speed = 0;
+  lateralOffset = 0;
+  targetLateralOffset = 0;
+  lastHitTime = 0;
+  
+  updateLivesUI();
   gameRunning = true;
+}
+
+function updateLivesUI() {
+  const bars = document.querySelectorAll('.life-bar');
+  bars.forEach((bar, index) => {
+    if (index < lives) {
+      bar.classList.remove('lost');
+    } else {
+      bar.classList.add('lost');
+    }
+  });
+}
+
+function gameOver() {
+  gameRunning = false;
+  const overlay = document.getElementById('overlay');
+  if(overlay) overlay.classList.remove('hidden');
+  window.showScreen('menu-gameover');
+  
+  const finalScoreEl = document.getElementById('final-score-val');
+  if(finalScoreEl) finalScoreEl.innerText = Math.floor(score).toLocaleString();
 }
 
 function triggerHitFlash() {
@@ -258,13 +357,20 @@ function update() {
 
   // Collision Detection
   obstacles.forEach(obs => {
-    // Check if ship is close to obstacle on spline t and lateral offset
     const tDiff = Math.min(Math.abs(t - obs.t), 1 - Math.abs(t - obs.t));
     if (tDiff < 0.0015 && Math.abs(lateralOffset - obs.lane) < 3.0 && now - lastHitTime > 1000) {
       speed *= 0.2;
       score = Math.max(0, score - 500);
       lastHitTime = now;
       triggerHitFlash();
+      
+      // Reduce lives
+      lives--;
+      updateLivesUI();
+      if (lives <= 0) {
+        gameOver();
+        return; 
+      }
       
       // Visual feedback on the mine
       obs.mesh.children.forEach(c => { if(c.material) c.material.color.setHex(0xffffff); });
@@ -315,7 +421,7 @@ function update() {
   const targetCamLook = shipGroup.position.clone().add(camLookOffset);
   camera.lookAt(targetCamLook);
 
-  // Speed Lines Logic (Only show > 100 km/h)
+  // Speed Lines logic
   const displaySpeed = Math.floor(speed * 300000);
   linesGroup.visible = displaySpeed >= 100;
 
@@ -332,11 +438,9 @@ function update() {
 
   // Mine Animations
   obstacles.forEach(obs => {
-    // Rotate rings
     obs.mesh.children.forEach(c => {
       if (c.userData.isRing) c.rotation.y += 0.05;
     });
-    // Pulse core
     const pulse = 1 + Math.sin(now * 0.005 + obs.t * 100) * 0.1;
     obs.mesh.children[0].scale.setScalar(pulse);
   });
@@ -346,7 +450,7 @@ function update() {
   eng2.scale.set(1, enginePulse, 1);
   pointLight.position.copy(shipGroup.position);
 
-  // Background movement
+  // Background
   gridHelper.position.z = (t * -2000) % 100;
   starField.rotation.y = t * 2;
 
@@ -362,8 +466,15 @@ function update() {
   
   score += Math.floor(speed * 2000);
   const scoreEl = document.getElementById('score-val');
-  if(scoreEl) scoreEl.innerText = score.toLocaleString();
+  if(scoreEl) scoreEl.innerText = Math.floor(score).toLocaleString();
 }
+
+/**
+ * INPUTS
+ */
+const keys = {};
+window.onkeydown = (e) => keys[e.code] = true;
+window.onkeyup = (e) => keys[e.code] = false;
 
 function animate() {
   requestAnimationFrame(animate);
