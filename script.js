@@ -7,7 +7,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
  * GAME STATE
  */
 let gameRunning = false;
-let score = 0, distance = 0, boost = 100, t = 0;
+let score = 0, boost = 100, t = 0;
 let speed = 0, lateralOffset = 0, targetLateralOffset = 0, shipRotationZ = 0;
 
 const MAX_SPEED = 0.0008;
@@ -64,17 +64,21 @@ scene.add(starField);
  * TRACK GENERATION
  */
 const curvePoints = [];
-for (let i = 0; i < 200; i++) {
-  const angle = (i / 200) * Math.PI * 2;
-  const x = Math.sin(angle) * 450 + Math.sin(angle * 3) * 80;
-  const y = Math.cos(angle * 2) * 80 + Math.sin(angle * 5) * 30;
-  const z = Math.cos(angle) * 450 + Math.cos(angle * 3) * 80;
+for (let i = 0; i < 400; i++) {
+  const angle = (i / 400) * Math.PI * 2;
+  
+  // Drift-Esque sweeping arcs using high amplitude, low-frequency waves
+  const x = Math.sin(angle) * 800 + Math.sin(angle * 2) * 500;
+  const y = Math.cos(angle * 2) * 200 + Math.sin(angle) * 150;
+  const z = Math.cos(angle) * 800 - Math.cos(angle * 2) * 500;
+  
   curvePoints.push(new THREE.Vector3(x, y, z));
 }
 const spline = new THREE.CatmullRomCurve3(curvePoints, true);
 
 // Main Dark Asphalt Track
-const trackGeo = new THREE.TubeGeometry(spline, 1200, 18, 20, true);
+// Increased segments (2400) to keep the sweeping curves ultra smooth
+const trackGeo = new THREE.TubeGeometry(spline, 3400, 18, 20, true);
 const canvas = document.createElement('canvas');
 canvas.width = 512; canvas.height = 512;
 const ctx = canvas.getContext('2d');
@@ -92,7 +96,7 @@ ctx.beginPath(); ctx.moveTo(0, 502); ctx.lineTo(512, 502); ctx.stroke();
 
 const trackTex = new THREE.CanvasTexture(canvas);
 trackTex.wrapS = THREE.RepeatWrapping; trackTex.wrapT = THREE.RepeatWrapping;
-trackTex.repeat.set(400, 2); 
+trackTex.repeat.set(800, 2); // Scaled texture repeats to match larger track
 
 const trackMat = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
 const trackMesh = new THREE.Mesh(trackGeo, trackMat);
@@ -101,7 +105,7 @@ scene.add(trackMesh);
 // Hovering Neon Rings 
 const ringGeo = new THREE.RingGeometry(25, 26.5, 32);
 const ringMat = new THREE.MeshBasicMaterial({ color: 0xff00aa, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
-for (let i = 0; i < 1; i += 0.015) {
+for (let i = 0; i < 1; i += 0.006) { // Adjusted density to fit the longer track perfectly
   const pos = spline.getPointAt(i);
   const tangent = spline.getTangentAt(i);
   const ring = new THREE.Mesh(ringGeo, ringMat);
@@ -287,7 +291,7 @@ function update() {
   gridHelper.position.z = (t * -2000) % 100;
   starField.rotation.y = t * Math.PI * 2;
 
-  // UI
+  // UI Updates
   const displaySpeed = Math.floor(speed * 300000);
   document.getElementById('speed-val').innerText = displaySpeed.toString().padStart(3, '0');
   
@@ -298,9 +302,7 @@ function update() {
   boostFill.style.boxShadow = isBoosting ? '0 0 20px #ffaa00' : '0 0 15px #00dcff';
   
   score += Math.floor(speed * 2000);
-  distance += speed * 100;
   document.getElementById('score-val').innerText = score;
-  document.getElementById('coins-val').innerText = Math.floor(distance) + ' M';
 }
 
 function animate() {
