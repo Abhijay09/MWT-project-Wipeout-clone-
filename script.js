@@ -6,8 +6,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 /** 
  * BACKEND CONFIG
  */
-const API_URL = 'http://localhost:3000'; // Change this to your Render URL after you deploy the server
-
+const API_URL = 'https://mwt-wipeout.onrender.com';
 /** 
  * GAME STATE
  */
