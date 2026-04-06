@@ -13,7 +13,7 @@ let score = 0, boost = 100, t = 0, lives = 3;
 let speed = 0, lateralOffset = 0, targetLateralOffset = 0, shipRotationZ = 0;
 let lastHitTime = 0;
 
-const MAX_SPEED = 0.0008;
+const MAX_SPEED = 0.0009;
 const BOOST_SPEED = 0.0015;
 const ACCEL = 0.000015;
 const FRICTION = 0.98;
