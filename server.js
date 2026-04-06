@@ -4,8 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors()); // Allows your game to talk to this server
-app.use(express.json()); // Allows server to read JSON data
+app.use(cors());
+app.use(express.json());
 
 // Connect to Neon Postgres
 const pool = new Pool({
@@ -40,6 +40,3 @@ app.post('/leaderboard', async (req, res) => {
     res.status(500).json({ error: "Failed to save score" });
   }
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

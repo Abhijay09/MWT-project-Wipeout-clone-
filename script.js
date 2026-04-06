@@ -3,10 +3,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-/** 
- * BACKEND CONFIG
- */
 const API_URL = 'https://mwt-wipeout.onrender.com';
+
 /** 
  * GAME STATE
  */
@@ -255,7 +253,6 @@ window.showScreen = function(screenId) {
   const target = document.getElementById(screenId);
   if (target) target.classList.remove('hidden');
 
-  // Load leaderboard data if that screen is opened
   if (screenId === 'menu-leaderboard') {
     loadLeaderboard();
   }
@@ -265,7 +262,6 @@ window.startGame = function() {
   const overlay = document.getElementById('overlay');
   if(overlay) overlay.classList.add('hidden');
   
-  // Reset game state
   lives = 3;
   score = 0;
   boost = 100;
@@ -363,7 +359,6 @@ function update() {
       lastHitTime = now;
       triggerHitFlash();
       
-      // Reduce lives
       lives--;
       updateLivesUI();
       if (lives <= 0) {
@@ -371,7 +366,6 @@ function update() {
         return; 
       }
       
-      // Visual feedback on the mine
       obs.mesh.children.forEach(c => { if(c.material) c.material.color.setHex(0xffffff); });
       setTimeout(() => {
         obs.mesh.children[0].material.color.setHex(obs.color);

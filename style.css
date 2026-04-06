@@ -26,7 +26,6 @@ canvas {
   display: block;
 }
 
-/* --- HUD STYLES --- */
 #hud {
   position: fixed;
   top: 0;
@@ -89,7 +88,6 @@ canvas {
   text-shadow: 0 0 10px var(--neon-pink);
 }
 
-/* --- MENU SCREENS --- */
 #overlay {
   position: fixed;
   inset: 0;
@@ -187,7 +185,6 @@ canvas {
   color: #000;
 }
 
-/* --- PANELS & ABOUT --- */
 .glass-panel {
   background: var(--glass);
   backdrop-filter: blur(15px);
@@ -259,7 +256,6 @@ canvas {
   margin-right: 10px;
 }
 
-/* --- CREDITS SECTION --- */
 .credits-list {
   width: 100%;
   display: flex;
@@ -304,7 +300,6 @@ canvas {
   filter: drop-shadow(0 0 5px var(--neon-cyan));
 }
 
-/* --- LEADERBOARD --- */
 .score-row {
   display: flex;
   justify-content: space-between;
@@ -318,7 +313,6 @@ canvas {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* --- SPEED & BOOST --- */
 #speed-meter {
   position: fixed;
   bottom: 40px;
@@ -367,7 +361,6 @@ canvas {
   color: var(--neon-cyan);
 }
 
-/* --- INPUTS --- */
 input {
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid var(--neon-cyan);
@@ -387,7 +380,6 @@ input:focus {
   box-shadow: 0 0 15px var(--neon-pink);
 }
 
-/* --- UTILS --- */
 .neon-text-cyan { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
 .neon-text-pink { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
 .neon-text-red { color: var(--neon-red); text-shadow: 0 0 15px var(--neon-red); }
